@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Subscription Manager</h1>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search subscriptions...">
+                <i class="fas fa-search"></i>
+            </div>
+        </header>
+        <!-- Add Subscription  -->
+        <div class="add-button-container" style="text-align: center; margin-top: 20px;">
+            <button id="addSubscriptionBtn" style="padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                + Add New Subscription
+            </button>
+        </div>
+        <script>
+            document.getElementById('addSubscriptionBtn').addEventListener('click', () => {
+                window.location.href = 'add.html';
+            });
+        </script>    
+            <!--  ADD -->
+        <div class="filters">
+            <select id="statusFilter">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <select id="sortBy">
+                <option value="name">Sort by Name</option>
+                <option value="date">Sort by Date</option>
+            </select>
+        </div>
+
+        <div class="subscriptions-container">
+            <table id="subscriptionsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Start Date</th>
+                        <th>Expiry Date</th>
+                        <th>User ID</th>
+                    </tr>
+                </thead>
+                <tbody id="subscriptionsBody">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Total Subscriptions</h3>
+                <p id="totalSubscriptions">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Active Subscriptions</h3>
+                <p id="activeSubscriptions">0</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 

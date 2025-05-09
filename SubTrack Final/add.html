@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Subscription</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input,
+    select,
+    button {
+      margin-bottom: 15px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="formTitle">Add Subscription</h1>
+    <form id="subscriptionForm">
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Enter subscription name" required />
+
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter username" />
+
+      <label for="startDate">Start Date</label>
+      <input type="date" id="startDate" required />
+
+      <label for="expiryDate">Expiry Date</label>
+      <input type="date" id="expiryDate" placeholder="Leave blank for lifetime validity" />
+      
+      <label>
+        <input type="checkbox" id="lifetimeCheckbox" /> Lifetime Subscription
+      </label>
+
+      <label for="userId">User ID</label>
+      <input type="text" id="userId" placeholder="Enter user ID" required />
+
+      <div class="error" id="errorMessage"></div>
+
+      <button type="submit" id="submitButton">Add Subscription</button>
+    </form>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get("editId");
+    const formTitle = document.getElementById("formTitle");
+    const submitButton = document.getElementById("submitButton");
+
+    const nameInput = document.getElementById("name");
+    const usernameInput = document.getElementById("username");
+    const startDateInput = document.getElementById("startDate");
+    const expiryDateInput = document.getElementById("expiryDate");
+    const lifetimeCheckbox = document.getElementById("lifetimeCheckbox");
+    const userIdInput = document.getElementById("userId");
+    const errorMessage = document.getElementById("errorMessage");
+
+    // Disable expiry date if lifetime is checked
+    lifetimeCheckbox.addEventListener("change", function () {
+      expiryDateInput.disabled = this.checked;
+      if (this.checked) expiryDateInput.value = "";
+    });
+
+    // If editId exists, fetch data and populate form
+    if (editId) {
+      formTitle.textContent = "Edit Subscription";
+      submitButton.textContent = "Update Subscription";
+
+      fetch(`http://127.0.0.1:3000/subscriptions/${editId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          nameInput.value = data.name;
+          usernameInput.value = data.username !== "N/A" ? data.username : "";
+          startDateInput.value = data.start_date;
+          userIdInput.value = data.user_id;
+
+          if (data.expiry_date === "NA") {
+            lifetimeCheckbox.checked = true;
+            expiryDateInput.disabled = true;
+          } else {
+            expiryDateInput.value = data.expiry_date;
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch subscription for editing:", err);
+          errorMessage.textContent = "Failed to load subscription data.";
+        });
+    }
+
+    document.getElementById("subscriptionForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = nameInput.value.trim();
+      const username = usernameInput.value.trim();
+      const startDate = startDateInput.value;
+      const expiryDate = lifetimeCheckbox.checked ? "NA" : expiryDateInput.value || "NA";
+      const userId = userIdInput.value.trim();
+
+      if (!name || !startDate || !userId) {
+        errorMessage.textContent = "Please fill in all required fields.";
+        return;
+      }
+
+      const subscriptionData = {
+        user_id: userId,
+        name,
+        username: username || "N/A",
+        start_date: startDate,
+        expiry_date: expiryDate,
+        active: expiryDate === "NA" || new Date(expiryDate) >= new Date(),
+      };
+
+      try {
+        const response = await fetch(`http://127.0.0.1:3000/subscriptions${editId ? '/' + editId : ''}`, {
+          method: editId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(subscriptionData),
+        });
+
+        if (response.ok) {
+          alert(`Subscription ${editId ? "updated" : "added"} successfully!`);
+          window.location.href = "index.html"; // redirect to home or list page
+        } else {
+          throw new Error("Failed to save subscription.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        errorMessage.textContent = "An error occurred while saving the subscription.";
+      }
+    });
+  </script>
+</body>
+</html>
